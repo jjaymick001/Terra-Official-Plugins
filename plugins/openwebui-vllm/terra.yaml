@@ -1,9 +1,7 @@
 resource_id: openwebui-vllm
 name: Open WebUI + vLLM
 icon: https://raw.githubusercontent.com/juno-fx/Terra-Official-Plugins/refs/heads/main/plugins/open-webui/scripts/assets/logo.png
-description: >
-  Deploys an OpenAI-compatible vLLM backend together with Open WebUI in a single
-  workload template for Juno/Terra.
+description: Open WebUI with a bundled vLLM backend.
 category: "AI"
 compatibility: genesis-deployment>=3.0.0-beta.1, orion-deployment>=3.0.0-beta.1
 
@@ -14,93 +12,4 @@ tags:
   - machine-learning
   - inference
 
-fields:
-  - name: model
-    label: Model
-    type: string
-    required: true
-    default: Qwen/Qwen2.5-0.5B-Instruct
-
-  - name: hfSecretName
-    label: Hugging Face Secret Name
-    type: string
-    required: true
-    default: hf-token-secret
-
-  - name: hfSecretKey
-    label: Hugging Face Secret Key
-    type: string
-    required: true
-    default: HF_TOKEN
-
-  - name: vllmImage
-    label: vLLM Image
-    type: string
-    required: true
-    default: vllm/vllm-openai:v0.15.1
-
-  - name: openwebuiImage
-    label: Open WebUI Image
-    type: string
-    required: true
-    default: ghcr.io/open-webui/open-webui:main
-
-  - name: vllmReplicas
-    label: vLLM Replicas
-    type: int
-    required: true
-    default: 2
-
-  - name: openwebuiReplicas
-    label: Open WebUI Replicas
-    type: int
-    required: true
-    default: 1
-
-  - name: gpuCount
-    label: GPUs per vLLM Pod
-    type: int
-    required: true
-    default: 1
-
-  - name: gpuProduct
-    label: GPU Product
-    type: string
-    required: false
-    default: NVIDIA-A100-PCIE-40GB
-
-  - name: nodeHostname
-    label: Node Hostname
-    type: string
-    required: false
-    default: blade-slot-2
-
-  - name: gpuMemoryUtilization
-    label: GPU Memory Utilization
-    type: string
-    required: true
-    default: "0.85"
-
-  - name: maxModelLen
-    label: Max Model Length
-    type: int
-    required: true
-    default: 8192
-
-  - name: webuiAuth
-    label: Enable Open WebUI Auth
-    type: boolean
-    required: true
-    default: false
-
-  - name: vllmServiceType
-    label: vLLM Service Type
-    type: string
-    required: true
-    default: LoadBalancer
-
-  - name: openwebuiServiceType
-    label: Open WebUI Service Type
-    type: string
-    required: true
-    default: LoadBalancer
+fields: []

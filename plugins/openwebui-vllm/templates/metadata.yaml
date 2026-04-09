@@ -1,8 +1,110 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-metadata
+  name: {{ .Release.Name }}-terra-metadata
+  labels:
+    kuiper.juno-innovations.com/chart: "{{ .Release.Name }}-scripts-configmap"
   annotations:
     juno-innovations.com/workload: "Application"
 data:
-  pluginName: "openwebui-vllm"
+  chart: "{{ .Release.Name }}-scripts-configmap"
+  description: "Open WebUI + vLLM"
+  fields: |
+    - name: registry
+      default: "ghcr.io/open-webui"
+    - name: repo
+      default: "open-webui"
+    - name: tag
+      default: "main"
+    - name: icon
+      default: "https://raw.githubusercontent.com/juno-fx/Terra-Official-Plugins/refs/heads/main/plugins/open-webui/scripts/assets/logo.png"
+
+    - name: model
+      description: Model
+      type: string
+      required: true
+      default: "Qwen/Qwen2.5-0.5B-Instruct"
+
+    - name: hfSecretName
+      description: Hugging Face Secret Name
+      type: string
+      required: true
+      default: "hf-token-secret"
+
+    - name: hfSecretKey
+      description: Hugging Face Secret Key
+      type: string
+      required: true
+      default: "HF_TOKEN"
+
+    - name: vllmImage
+      description: vLLM Image
+      type: string
+      required: true
+      default: "vllm/vllm-openai:v0.15.1"
+
+    - name: openwebuiImage
+      description: Open WebUI Image
+      type: string
+      required: true
+      default: "ghcr.io/open-webui/open-webui:main"
+
+    - name: vllmReplicas
+      description: vLLM Replicas
+      type: int
+      required: true
+      default: 2
+
+    - name: openwebuiReplicas
+      description: Open WebUI Replicas
+      type: int
+      required: true
+      default: 1
+
+    - name: gpuCount
+      description: GPUs per vLLM Pod
+      type: int
+      required: true
+      default: 1
+
+    - name: gpuProduct
+      description: GPU Product
+      type: string
+      required: false
+      default: "NVIDIA-A100-PCIE-40GB"
+
+    - name: nodeHostname
+      description: Node Hostname
+      type: string
+      required: false
+      default: "blade-slot-2"
+
+    - name: gpuMemoryUtilization
+      description: GPU Memory Utilization
+      type: string
+      required: true
+      default: "0.85"
+
+    - name: maxModelLen
+      description: Max Model Length
+      type: int
+      required: true
+      default: 8192
+
+    - name: webuiAuth
+      description: Enable Open WebUI Auth
+      type: string
+      required: true
+      default: "false"
+
+    - name: vllmServiceType
+      description: vLLM Service Type
+      type: string
+      required: true
+      default: "LoadBalancer"
+
+    - name: openwebuiServiceType
+      description: Open WebUI Service Type
+      type: string
+      required: true
+      default: "LoadBalancer"
