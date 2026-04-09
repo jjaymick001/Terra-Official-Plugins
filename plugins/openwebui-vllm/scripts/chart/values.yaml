@@ -1,31 +1,38 @@
-name: webui
-user:
-webtop_repo:
-webtop_tag:
-webtop_registry:
-repo:
-tag:
-registry:
-group:
-cpu: "1"
-memory: "1Gi"
-cpuLimit: null
-memoryLimit: null
-gpu: false
-idx: 0
-guid: 0
-puid: 0
-host:
-pullSecret:
-session:
-volumeMounts: []
-volumes: []
-env:
-  - name: JUNO
-    value: "true"
-selector:
-plugins: []
-_kuiper:
-timezone: "America/New_York"
-storage_class:
-storage_size: "1Gi"
+cat > plugins/openwebui-vllm/scripts/chart/values.yaml <<'EOF'
+model: Qwen/Qwen2.5-0.5B-Instruct
+hfSecretName: hf-token-secret
+hfSecretKey: HF_TOKEN
+
+vllmImage: vllm/vllm-openai:v0.15.1
+openwebuiImage: ghcr.io/open-webui/open-webui:main
+
+vllmReplicas: 2
+openwebuiReplicas: 1
+
+gpuCount: "1"
+gpuProduct: NVIDIA-A100-PCIE-40GB
+nodeHostname: blade-slot-2
+
+gpuMemoryUtilization: "0.85"
+maxModelLen: 8192
+
+webuiAuth: "false"
+
+vllmServiceType: LoadBalancer
+openwebuiServiceType: LoadBalancer
+
+vllm:
+  port: 8000
+  resources:
+    limits:
+      cpu: "8"
+      memory: "32Gi"
+      nvidia.com/gpu: "1"
+
+openwebui:
+  port: 8080
+  resources:
+    requests:
+      cpu: "1"
+      memory: "1Gi"
+EOF

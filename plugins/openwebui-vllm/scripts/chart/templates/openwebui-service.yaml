@@ -1,0 +1,16 @@
+cat > plugins/openwebui-vllm/scripts/chart/templates/openwebui-service.yaml <<'EOF'
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-open-webui-svc
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}-open-webui
+spec:
+  type: {{ .Values.openwebuiServiceType }}
+  selector:
+    app.kubernetes.io/name: {{ .Release.Name }}-open-webui
+  ports:
+    - name: http
+      port: 80
+      targetPort: {{ .Values.openwebui.port }}
+EOF

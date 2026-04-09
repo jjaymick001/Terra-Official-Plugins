@@ -1,0 +1,57 @@
+cat > plugins/openwebui-vllm/scripts/chart/templates/openwebui-deployment.yaml <<'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-open-webui
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}-open-webui
+spec:
+  replicas: {{ .Values.openwebuiReplicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Release.Name }}-open-webui
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Release.Name }}-open-webui
+    spec:
+      initContainers:
+        - name: wait-for-vllm
+          image: curlimages/curl:8.5.0
+          command: ["sh", "-c"]
+          args:
+            - >
+              echo "Waiting for vLLM...";
+              until curl -sf http://{{ .Release.Name }}-lls-svc:{{ .Values.vllm.port }}/v1/models > /dev/null;
+              do sleep 2;
+              done;
+              echo "vLLM is up.";
+      containers:
+        - name: open-webui
+          image: {{ .Values.openwebuiImage | quote }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: ui
+              containerPort: {{ .Values.openwebui.port }}
+          env:
+            - name: WEBUI_AUTH
+              value: {{ .Values.webuiAuth | quote }}
+            - name: OPENAI_API_BASE_URL
+              value: "http://{{ .Release.Name }}-lls-svc:{{ .Values.vllm.port }}/v1"
+            - name: OPENAI_API_KEY
+              value: "dummy"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.openwebui.port }}
+            periodSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.openwebui.port }}
+            periodSeconds: 10
+            failureThreshold: 6
+          resources:
+{{ toYaml .Values.openwebui.resources | indent 12 }}
+EOF

@@ -1,0 +1,73 @@
+cat > plugins/openwebui-vllm/scripts/chart/templates/vllm-deployment.yaml <<'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-vllm
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}-vllm
+spec:
+  replicas: {{ .Values.vllmReplicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Release.Name }}-vllm
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Release.Name }}-vllm
+    spec:
+      enableServiceLinks: false
+      {{- if or .Values.gpuProduct .Values.nodeHostname }}
+      nodeSelector:
+        {{- if .Values.gpuProduct }}
+        nvidia.com/gpu.product: {{ .Values.gpuProduct | quote }}
+        {{- end }}
+        {{- if .Values.nodeHostname }}
+        kubernetes.io/hostname: {{ .Values.nodeHostname | quote }}
+        {{- end }}
+      {{- end }}
+      containers:
+        - name: vllm
+          image: {{ .Values.vllmImage | quote }}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: HUGGING_FACE_HUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.hfSecretName | quote }}
+                  key: {{ .Values.hfSecretKey | quote }}
+            - name: NVIDIA_DRIVER_CAPABILITIES
+              value: "compute,utility"
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: "all"
+            - name: LD_LIBRARY_PATH
+              value: "/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu"
+          args:
+            - "--model={{ .Values.model }}"
+            - "--host=0.0.0.0"
+            - "--port={{ .Values.vllm.port }}"
+            - "--gpu-memory-utilization={{ .Values.gpuMemoryUtilization }}"
+            - "--max-model-len={{ .Values.maxModelLen }}"
+          ports:
+            - name: http
+              containerPort: {{ .Values.vllm.port }}
+          startupProbe:
+            httpGet:
+              path: /v1/models
+              port: {{ .Values.vllm.port }}
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: /v1/models
+              port: {{ .Values.vllm.port }}
+            periodSeconds: 10
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /v1/models
+              port: {{ .Values.vllm.port }}
+            periodSeconds: 20
+            failureThreshold: 6
+          resources:
+{{ toYaml .Values.vllm.resources | indent 12 }}
+EOF
