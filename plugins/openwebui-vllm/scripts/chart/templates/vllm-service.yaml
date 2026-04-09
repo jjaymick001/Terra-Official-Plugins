@@ -1,16 +1,17 @@
-cat > plugins/openwebui-vllm/scripts/chart/templates/vllm-service.yaml <<'EOF'
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-lls-svc
+  name: "{{ .Values.name }}-lls-svc"
   labels:
-    app.kubernetes.io/name: {{ .Release.Name }}-vllm
+    juno-innovations.com/workstation: "{{ .Values.name }}"
+    juno-innovations.com/app: "openwebui-vllm"
+    app.kubernetes.io/component: vllm
 spec:
   type: {{ .Values.vllmServiceType }}
   selector:
-    app.kubernetes.io/name: {{ .Release.Name }}-vllm
+    juno-innovations.com/workstation: "{{ .Values.name }}"
+    app.kubernetes.io/component: vllm
   ports:
     - name: http
       port: {{ .Values.vllm.port }}
       targetPort: {{ .Values.vllm.port }}
-EOF

@@ -1,19 +1,33 @@
-cat > plugins/openwebui-vllm/scripts/chart/templates/openwebui-deployment.yaml <<'EOF'
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-open-webui
+  name: "{{ .Values.name }}-open-webui"
+  annotations:
+    juno-innovations.com/kuiper-state: "{{ .Values._kuiper }}"
+    juno-innovations.com/workload: "Application"
   labels:
-    app.kubernetes.io/name: {{ .Release.Name }}-open-webui
+    juno-innovations.com/workstation: "{{ .Values.name }}"
+    juno-innovations.com/user: "{{ .Values.user }}"
+    juno-innovations.com/session: "{{ .Values.session }}"
+    juno-innovations.com/app: "openwebui-vllm"
+    app.kubernetes.io/name: "{{ .Values.name }}-open-webui"
 spec:
   replicas: {{ .Values.openwebuiReplicas }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ .Release.Name }}-open-webui
+      juno-innovations.com/workstation: "{{ .Values.name }}"
+      app.kubernetes.io/component: open-webui
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ .Release.Name }}-open-webui
+        juno-innovations.com/workstation: "{{ .Values.name }}"
+        juno-innovations.com/user: "{{ .Values.user }}"
+        juno-innovations.com/session: "{{ .Values.session }}"
+        juno-innovations.com/app: "openwebui-vllm"
+        app.kubernetes.io/component: open-webui
+        app.kubernetes.io/name: "{{ .Values.name }}-open-webui"
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
     spec:
       initContainers:
         - name: wait-for-vllm
@@ -22,7 +36,7 @@ spec:
           args:
             - >
               echo "Waiting for vLLM...";
-              until curl -sf http://{{ .Release.Name }}-lls-svc:{{ .Values.vllm.port }}/v1/models > /dev/null;
+              until curl -sf http://{{ .Values.name }}-lls-svc:{{ .Values.vllm.port }}/v1/models > /dev/null;
               do sleep 2;
               done;
               echo "vLLM is up.";
@@ -37,7 +51,7 @@ spec:
             - name: WEBUI_AUTH
               value: {{ .Values.webuiAuth | quote }}
             - name: OPENAI_API_BASE_URL
-              value: "http://{{ .Release.Name }}-lls-svc:{{ .Values.vllm.port }}/v1"
+              value: "http://{{ .Values.name }}-lls-svc:{{ .Values.vllm.port }}/v1"
             - name: OPENAI_API_KEY
               value: "dummy"
           readinessProbe:
@@ -54,4 +68,3 @@ spec:
             failureThreshold: 6
           resources:
 {{ toYaml .Values.openwebui.resources | indent 12 }}
-EOF

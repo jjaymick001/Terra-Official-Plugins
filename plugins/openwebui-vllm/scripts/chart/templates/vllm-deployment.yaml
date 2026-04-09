@@ -1,22 +1,36 @@
-cat > plugins/openwebui-vllm/scripts/chart/templates/vllm-deployment.yaml <<'EOF'
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-vllm
+  name: "{{ .Values.name }}-vllm"
+  annotations:
+    juno-innovations.com/kuiper-state: "{{ .Values._kuiper }}"
+    juno-innovations.com/workload: "Application"
   labels:
-    app.kubernetes.io/name: {{ .Release.Name }}-vllm
+    juno-innovations.com/workstation: "{{ .Values.name }}"
+    juno-innovations.com/user: "{{ .Values.user }}"
+    juno-innovations.com/session: "{{ .Values.session }}"
+    juno-innovations.com/app: "openwebui-vllm"
+    app.kubernetes.io/name: "{{ .Values.name }}-vllm"
 spec:
   replicas: {{ .Values.vllmReplicas }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ .Release.Name }}-vllm
+      juno-innovations.com/workstation: "{{ .Values.name }}"
+      app.kubernetes.io/component: vllm
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ .Release.Name }}-vllm
+        juno-innovations.com/workstation: "{{ .Values.name }}"
+        juno-innovations.com/user: "{{ .Values.user }}"
+        juno-innovations.com/session: "{{ .Values.session }}"
+        juno-innovations.com/app: "openwebui-vllm"
+        app.kubernetes.io/component: vllm
+        app.kubernetes.io/name: "{{ .Values.name }}-vllm"
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
     spec:
       enableServiceLinks: false
-      {{- if or .Values.gpuProduct .Values.nodeHostname }}
+      {{- if or .Values.gpuProduct .Values.nodeHostname .Values.selector }}
       nodeSelector:
         {{- if .Values.gpuProduct }}
         nvidia.com/gpu.product: {{ .Values.gpuProduct | quote }}
@@ -24,6 +38,19 @@ spec:
         {{- if .Values.nodeHostname }}
         kubernetes.io/hostname: {{ .Values.nodeHostname | quote }}
         {{- end }}
+      {{- end }}
+      {{- if .Values.selector }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                {{- range .Values.selector }}
+                - key: {{ .key | quote }}
+                  operator: In
+                  values:
+                    - {{ .value | quote }}
+                {{- end }}
       {{- end }}
       containers:
         - name: vllm
@@ -70,4 +97,3 @@ spec:
             failureThreshold: 6
           resources:
 {{ toYaml .Values.vllm.resources | indent 12 }}
-EOF

@@ -1,4 +1,9 @@
-cat > plugins/openwebui-vllm/scripts/chart/values.yaml <<'EOF'
+name:
+user:
+session:
+_kuiper:
+selector: []
+
 model: Qwen/Qwen2.5-0.5B-Instruct
 hfSecretName: hf-token-secret
 hfSecretKey: HF_TOKEN
@@ -35,4 +40,3 @@ openwebui:
     requests:
       cpu: "1"
       memory: "1Gi"
-EOF
