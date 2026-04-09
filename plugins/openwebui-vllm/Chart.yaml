@@ -1,6 +1,0 @@
-apiVersion: v2
-name: openwebui-vllm
-description: Open WebUI + vLLM workload template for Juno/Terra
-type: application
-version: 0.1.0
-appVersion: "0.1.0"
