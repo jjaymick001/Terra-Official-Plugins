@@ -1,0 +1,27 @@
+model: Qwen/Qwen2.5-0.5B-Instruct
+hfSecretName: hf-token-secret
+hfSecretKey: HF_TOKEN
+
+vllmImage: vllm/vllm-openai:v0.15.1
+openwebuiImage: ghcr.io/open-webui/open-webui:main
+
+vllmReplicas: 2
+openwebuiReplicas: 1
+
+gpuCount: 1
+gpuProduct: NVIDIA-A100-PCIE-40GB
+nodeHostname: blade-slot-2
+
+gpuMemoryUtilization: "0.85"
+maxModelLen: 8192
+
+webuiAuth: false
+
+vllmServiceType: LoadBalancer
+openwebuiServiceType: LoadBalancer
+
+resources:
+  vllm:
+    cpu: "8"
+    memory: "32Gi"
+
