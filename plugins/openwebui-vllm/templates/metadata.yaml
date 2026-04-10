@@ -10,6 +10,9 @@ data:
   chart: "{{ .Release.Name }}-scripts-configmap"
   description: "Open WebUI + vLLM"
   fields: |
+    - name: icon
+      default: "https://raw.githubusercontent.com/juno-fx/Terra-Official-Plugins/refs/heads/main/plugins/open-webui/scripts/assets/logo.png"
+
     - name: model
       description: Model
       type: string
@@ -68,7 +71,7 @@ data:
       description: Node Hostname
       type: string
       required: false
-      default: "blade-slot-2"
+      default: ""
 
     - name: gpuMemoryUtilization
       description: GPU Memory Utilization
@@ -99,5 +102,3 @@ data:
       type: string
       required: true
       default: "LoadBalancer"
-    - name: icon
-      default: "https://raw.githubusercontent.com/juno-fx/Terra-Official-Plugins/refs/heads/main/plugins/open-webui/scripts/assets/logo.png"
