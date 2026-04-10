@@ -78,9 +78,3 @@ data:
       type: string
       required: true
       default: "false"
-
-    - name: openwebuiServiceType
-      description: Open WebUI Service Type
-      type: string
-      required: true
-      default: "LoadBalancer"
