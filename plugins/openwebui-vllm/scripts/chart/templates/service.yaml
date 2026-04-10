@@ -1,17 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: "{{ .Values.name }}-open-webui-svc"
+  name: "{{ .Values.name }}"
   labels:
+    juno-innovations.com/app: "polaris"
     juno-innovations.com/workstation: "{{ .Values.name }}"
-    juno-innovations.com/app: "openwebui-vllm"
-    app.kubernetes.io/component: open-webui
 spec:
   type: {{ .Values.openwebuiServiceType }}
   selector:
     juno-innovations.com/workstation: "{{ .Values.name }}"
-    app.kubernetes.io/component: open-webui
   ports:
-    - name: http
+    - name: viewer
       port: 80
       targetPort: {{ .Values.openwebui.port }}
+      protocol: TCP

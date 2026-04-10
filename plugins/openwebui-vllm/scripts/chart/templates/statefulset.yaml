@@ -1,36 +1,37 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: "{{ .Values.name }}-vllm"
+  name: "{{ .Values.name }}"
   annotations:
     juno-innovations.com/kuiper-state: "{{ .Values._kuiper }}"
+    juno-innovations.com/shared: "none"
     juno-innovations.com/workload: "Application"
   labels:
-    juno-innovations.com/workstation: "{{ .Values.name }}"
-    juno-innovations.com/user: "{{ .Values.user }}"
+    juno-innovations.com/app: "polaris"
     juno-innovations.com/session: "{{ .Values.session }}"
-    juno-innovations.com/app: "openwebui-vllm"
-    app.kubernetes.io/name: "{{ .Values.name }}-vllm"
+    juno-innovations.com/user: "{{ .Values.user }}"
+    juno-innovations.com/workstation: "{{ .Values.name }}"
+    kuiper.juno-innovations.com/kuiper-instance: "{{ .Values.name }}"
 spec:
-  replicas: {{ .Values.vllmReplicas }}
+  serviceName: ""
+  replicas: 1
   selector:
     matchLabels:
       juno-innovations.com/workstation: "{{ .Values.name }}"
-      app.kubernetes.io/component: vllm
   template:
     metadata:
       labels:
-        juno-innovations.com/workstation: "{{ .Values.name }}"
+        juno-innovations.com/app: "polaris"
         juno-innovations.com/user: "{{ .Values.user }}"
-        juno-innovations.com/session: "{{ .Values.session }}"
-        juno-innovations.com/app: "openwebui-vllm"
-        app.kubernetes.io/component: vllm
-        app.kubernetes.io/name: "{{ .Values.name }}-vllm"
+        juno-innovations.com/workstation: "{{ .Values.name }}"
+        kuiper.juno-innovations.com/kuiper-instance: "{{ .Values.name }}"
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
     spec:
-      enableServiceLinks: false
-      {{- if or .Values.gpuProduct .Values.nodeHostname .Values.selector }}
+      automountServiceAccountToken: false
+      runtimeClassName: nvidia
+      hostname: "{{ .Values.name }}"
+      {{- if or .Values.gpuProduct .Values.nodeHostname }}
       nodeSelector:
         {{- if .Values.gpuProduct }}
         nvidia.com/gpu.product: {{ .Values.gpuProduct | quote }}
@@ -39,19 +40,19 @@ spec:
         kubernetes.io/hostname: {{ .Values.nodeHostname | quote }}
         {{- end }}
       {{- end }}
-      {{- if .Values.selector }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                {{- range .Values.selector }}
-                - key: {{ .key | quote }}
-                  operator: In
-                  values:
-                    - {{ .value | quote }}
-                {{- end }}
-      {{- end }}
+                  - key: juno-innovations.com/workstation
+                    operator: In
+                    values:
+                      - "true"
+      tolerations:
+        - effect: NoSchedule
+          key: juno-innovations.com/workstation
+          operator: Exists
       containers:
         - name: vllm
           image: {{ .Values.vllmImage | quote }}
@@ -69,20 +70,23 @@ spec:
             - name: LD_LIBRARY_PATH
               value: "/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu"
           args:
-            - "--model={{ .Values.model }}"
+            - "serve"
+            - "{{ .Values.model }}"
             - "--host=0.0.0.0"
             - "--port={{ .Values.vllm.port }}"
             - "--gpu-memory-utilization={{ .Values.gpuMemoryUtilization }}"
             - "--max-model-len={{ .Values.maxModelLen }}"
           ports:
-            - name: http
+            - name: vllm
               containerPort: {{ .Values.vllm.port }}
+              protocol: TCP
           startupProbe:
             httpGet:
               path: /v1/models
               port: {{ .Values.vllm.port }}
+            initialDelaySeconds: 5
             periodSeconds: 5
-            failureThreshold: 60
+            failureThreshold: 300
           readinessProbe:
             httpGet:
               path: /v1/models
@@ -97,3 +101,37 @@ spec:
             failureThreshold: 6
           resources:
 {{ toYaml .Values.vllm.resources | indent 12 }}
+
+        - name: open-webui
+          image: {{ .Values.openwebuiImage | quote }}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WEBUI_AUTH
+              value: {{ .Values.webuiAuth | quote }}
+            - name: OPENAI_API_BASE_URL
+              value: "http://127.0.0.1:{{ .Values.vllm.port }}/v1"
+            - name: OPENAI_API_KEY
+              value: "dummy"
+            - name: HF_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.hfSecretName | quote }}
+                  key: {{ .Values.hfSecretKey | quote }}
+          ports:
+            - name: viewer
+              containerPort: {{ .Values.openwebui.port }}
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.openwebui.port }}
+            periodSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.openwebui.port }}
+            periodSeconds: 10
+            failureThreshold: 6
+          resources:
+{{ toYaml .Values.openwebui.resources | indent 12 }}

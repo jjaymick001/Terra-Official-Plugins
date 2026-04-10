@@ -18,9 +18,6 @@ hfSecretKey: HF_TOKEN
 vllmImage: vllm/vllm-openai:v0.15.1
 openwebuiImage: ghcr.io/open-webui/open-webui:main
 
-vllmReplicas: 2
-openwebuiReplicas: 1
-
 gpuCount: "1"
 gpuProduct: NVIDIA-A100-PCIE-40GB
 nodeHostname: ""
@@ -29,8 +26,6 @@ gpuMemoryUtilization: "0.85"
 maxModelLen: 8192
 
 webuiAuth: "false"
-
-vllmServiceType: LoadBalancer
 openwebuiServiceType: LoadBalancer
 
 vllm:
@@ -39,6 +34,10 @@ vllm:
     limits:
       cpu: "8"
       memory: "32Gi"
+      nvidia.com/gpu: "1"
+    requests:
+      cpu: "1"
+      memory: "1Gi"
       nvidia.com/gpu: "1"
 
 openwebui:
