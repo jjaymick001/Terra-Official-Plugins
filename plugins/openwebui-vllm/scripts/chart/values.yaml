@@ -1,8 +1,15 @@
-name:
+name: openwebui-vllm
 user:
+group:
 session:
 _kuiper:
 selector: []
+env: []
+volumes: []
+volumeMounts: []
+plugins: []
+proxy_namespace: ingress-nginx
+pullSecret:
 
 model: Qwen/Qwen2.5-0.5B-Instruct
 hfSecretName: hf-token-secret
@@ -16,7 +23,7 @@ openwebuiReplicas: 1
 
 gpuCount: "1"
 gpuProduct: NVIDIA-A100-PCIE-40GB
-nodeHostname: blade-slot-2
+nodeHostname: ""
 
 gpuMemoryUtilization: "0.85"
 maxModelLen: 8192
@@ -40,3 +47,4 @@ openwebui:
     requests:
       cpu: "1"
       memory: "1Gi"
+
