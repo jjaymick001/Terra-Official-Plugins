@@ -28,6 +28,17 @@ maxModelLen: 8192
 webuiAuth: "false"
 openwebuiServiceType: LoadBalancer
 
+webtop_registry: lscr.io/linuxserver
+webtop_repo: webtop
+webtop_tag: latest
+puid: "1000"
+guid: "1001"
+cpu: "1"
+memory: "1Gi"
+cpuLimit:
+memoryLimit:
+timezone: "UTC"
+
 vllm:
   port: 8000
   resources:

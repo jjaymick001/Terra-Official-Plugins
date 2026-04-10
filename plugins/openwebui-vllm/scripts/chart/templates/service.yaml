@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: "{{ .Values.name }}"
   labels:
-    juno-innovations.com/app: "polaris"
+    juno-innovations.com/app: "{{ .Values.name }}"
     juno-innovations.com/workstation: "{{ .Values.name }}"
 spec:
   type: {{ .Values.openwebuiServiceType }}
@@ -12,5 +12,5 @@ spec:
   ports:
     - name: viewer
       port: 80
-      targetPort: {{ .Values.openwebui.port }}
+      targetPort: 3001
       protocol: TCP

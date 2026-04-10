@@ -54,6 +54,43 @@ spec:
           key: juno-innovations.com/workstation
           operator: Exists
       containers:
+        - name: webtop
+          image: "{{ .Values.webtop_registry }}/{{ .Values.webtop_repo }}:{{ .Values.webtop_tag }}"
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              memory: "{{ .Values.memory }}"
+              cpu: "{{ .Values.cpu }}"
+            {{- if or .Values.cpuLimit .Values.memoryLimit }}
+            limits:
+              {{- if .Values.cpuLimit }}
+              cpu: "{{ .Values.cpuLimit }}"
+              {{- end }}
+              {{- if .Values.memoryLimit }}
+              memory: "{{ .Values.memoryLimit }}"
+              {{- end }}
+            {{- end }}
+          ports:
+            - containerPort: 3001
+              name: viewer
+              protocol: TCP
+          env:
+            - name: PUID
+              value: "{{ .Values.puid }}"
+            - name: PGID
+              value: "{{ .Values.guid }}"
+            - name: SUBFOLDER
+              value: "/webtop/{{ .Values.name }}/"
+            - name: START_DOCKER
+              value: "false"
+            - name: CHROME_CLI
+              value: "--force-dark-mode http://localhost:8080/"
+            - name: TZ
+              value: "{{ .Values.timezone }}"
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+
         - name: vllm
           image: {{ .Values.vllmImage | quote }}
           imagePullPolicy: IfNotPresent
@@ -117,7 +154,7 @@ spec:
                   name: {{ .Values.hfSecretName | quote }}
                   key: {{ .Values.hfSecretKey | quote }}
           ports:
-            - name: viewer
+            - name: ui
               containerPort: {{ .Values.openwebui.port }}
               protocol: TCP
           readinessProbe:
@@ -134,3 +171,7 @@ spec:
             failureThreshold: 6
           resources:
 {{ toYaml .Values.openwebui.resources | indent 12 }}
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
