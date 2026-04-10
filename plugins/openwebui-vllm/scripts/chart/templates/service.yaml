@@ -2,15 +2,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: "{{ .Values.name }}"
-  labels:
-    juno-innovations.com/app: "{{ .Values.name }}"
-    juno-innovations.com/workstation: "{{ .Values.name }}"
 spec:
-  type: {{ .Values.openwebuiServiceType }}
   selector:
-    juno-innovations.com/workstation: "{{ .Values.name }}"
+    kuiper.juno-innovations.com/kuiper-instance: "{{ .Values.name }}"
   ports:
-    - name: viewer
-      port: 80
+    - port: 3001
       targetPort: 3001
       protocol: TCP
+      name: webtop
