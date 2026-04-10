@@ -43,20 +43,8 @@ data:
       required: true
       default: "ghcr.io/open-webui/open-webui:main"
 
-    - name: vllmReplicas
-      description: vLLM Replicas
-      type: int
-      required: true
-      default: 2
-
-    - name: openwebuiReplicas
-      description: Open WebUI Replicas
-      type: int
-      required: true
-      default: 1
-
     - name: gpuCount
-      description: GPUs per vLLM Pod
+      description: GPUs per workload
       type: int
       required: true
       default: 1
@@ -90,12 +78,6 @@ data:
       type: string
       required: true
       default: "false"
-
-    - name: vllmServiceType
-      description: vLLM Service Type
-      type: string
-      required: true
-      default: "LoadBalancer"
 
     - name: openwebuiServiceType
       description: Open WebUI Service Type
